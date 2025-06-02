@@ -4,15 +4,15 @@
 const username = "Ritik";
 const password = "x";
 
-const socket = io("http://localhost:9000");
+const clientSocket = io("http://localhost:9000");
 
-socket.on("connect", () => {
-  console.log("connected");
-  socket.emit("clientConnect");
+clientSocket.on("connect", () => {
+  console.log("connected to the socket server");
+  clientSocket.emit("clientConnect");
 });
 
 // Listen for the nslist event from the server which gives us the namespaces
-socket.on("nsList", (nsData) => {
+clientSocket.on("nsList", (nsData) => {
   if (!nsData || nsData.length === 0) return;
 
   const lastNamespace = getLastNamespace(nsData);
@@ -47,8 +47,8 @@ function renderNamespaces(nsData, lastNamespace) {
         `<div class="namespace ${
           ns.name === lastNamespace.name ? "activeNamespace" : ""
         }" 
-           ns="${ns.endpoint}"
-           data-name="${ns.name}">
+           data-namespace-endpoint="${ns.endpoint}"
+           data-namespace-name="${ns.name}">
         <img src="${ns.image}" alt="${ns.name}">
       </div>`
     )
@@ -66,7 +66,7 @@ function renderNamespaces(nsData, lastNamespace) {
       // Add active class to clicked namespace
       namespaceEl.classList.add("activeNamespace");
 
-      joinNs(namespaceEl, nsData);
+      joinNamespace(namespaceEl, nsData);
     }
   });
 }
@@ -84,13 +84,13 @@ function autoJoinNamespace(nsData, lastNamespace) {
     });
     targetElement.classList.add("activeNamespace");
 
-    joinNs(targetElement, nsData);
+    joinNamespace(targetElement, nsData);
   } else {
     // Fallback to first namespace
     const firstNamespace = document.querySelector(".namespace");
     if (firstNamespace) {
       firstNamespace.classList.add("activeNamespace");
-      joinNs(firstNamespace, nsData);
+      joinNamespace(firstNamespace, nsData);
     }
   }
 }

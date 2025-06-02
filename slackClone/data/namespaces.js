@@ -22,7 +22,7 @@ const linuxNs = new Namespace(
   "/linux"
 );
 
-wikiNs.addRoom(new Room(0, "New articles", 0));
+wikiNs.addRoom(new Room(0, "New articles", 0, true));
 wikiNs.addRoom(new Room(1, "Editors", 0));
 wikiNs.addRoom(new Room(2, "Others", 0));
 
