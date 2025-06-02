@@ -16,3 +16,5 @@ const joinRoom = (roomId, namespaceId, roomTitle, activeNamespaceSocket) => {
     roomTitle,
   });
 };
+
+const 

@@ -7,7 +7,13 @@ const Room = require("./classes/Room");
 app.use(express.static(__dirname + "/public"));
 
 const expressServer = app.listen(9000);
-const io = socketio(expressServer);
+const io = socketio(expressServer, {
+  cors: {
+    origin: ["http://localhost:9000", "http://127.0.0.1:9000"],
+    methods: ["GET", "POST"],
+    credentials: true,
+  }
+});
 
 app.get("/updateNamespaces", (req, res) => {
   namespaces[0].addRoom(new Room(0, "Red Room for naughty people", 0));
@@ -25,10 +31,10 @@ namespaces.forEach((namespace) => {
   // Create namespace instance
   const nsIO = io.of(namespace.endpoint);
 
-  nsIO.on("connection", (nsSocket) => {
+  nsIO.on("connection",(nsSocket) => {
     console.log(`${nsSocket.id} has connected to ${namespace.endpoint}`);
 
-    nsSocket.on("requestToJoinRoomFromClient", (data, ack) => {
+    nsSocket.on("requestToJoinRoomFromClient", async (data, ack) => {
       // console.log("Join room request:", {
       //   data,
       //   namespaceId: namespace.id,
@@ -39,6 +45,11 @@ namespaces.forEach((namespace) => {
       // });
 
       const room = namespace.getRoomById(data.roomId);
+      const connectedSockets = await nsIO.fetchSockets();
+      const numberOfUsersInNamespace = connectedSockets.length;
+
+      // const users = await nsIO.fetchSockets();
+      // console.log(users);
       if (!room) {
         console.log("Room not found:", {
           requestedId: data.roomId,
@@ -49,7 +60,10 @@ namespaces.forEach((namespace) => {
 
       // Join the room
       nsSocket.join(room.roomTitle);
-      ack("Room joined");
+      ack({
+        status: "Room joined",
+        numberOfUsers: numberOfUsersInNamespace,
+      });
       // console.log(
       //   `Socket ${nsSocket.id} joined room: ${room.roomTitle} with id: ${room.roomId}`
       // );
